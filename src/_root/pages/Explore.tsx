@@ -2,16 +2,25 @@ import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 import SearchResults from "@/components/shared/SearchResults";
 import useDebounce from "@/hooks/useDebounce";
-import {
-  useGetPosts,
-  useSearchPosts,
-} from "@/lib/react-query/queriesAndMutations";
+import { getInfinitePosts } from "@/lib/appwrite/api";
+import { useSearchPosts } from "@/lib/react-query/queriesAndMutations";
+import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import { useInView } from "react-intersection-observer";
 
 const Explore = () => {
   const { ref, inView } = useInView();
-  const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
+  const {
+    data: posts,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+    queryFn: getInfinitePosts,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage?.documents.length,
+  });
   const [searchValue, setSearchValue] = React.useState("");
   const debouncedValue = useDebounce(searchValue, 500);
   const { data: searchedPosts, isFetching: isSearchFetching } =
